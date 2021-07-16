@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Tic Tac Toe</title>
+        <link href="style.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="error hidden"></div>
+        <div class="winner hidden"></div>
+        <div id="game" class="centering">
+            <div id="p1" class="players">
+                <h1 id="p1-name">Bot Player 1</h1>
+                <h1 id="p1-piece">(X)</h1>
+                <div class="buttons">
+                    <button type="button" id="p1-add">Add Player 1</button>
+                    <button type="button" id="p1-remove">Remove Player 1</button>
+                </div>
+            </div>
+            <div id="game-board" class="locked">
+                <div id="0-0" class="square noselect"></div>
+                <div id="0-1" class="square noselect"></div>
+                <div id="0-2" class="square noselect"></div>
+                <div id="1-0" class="square noselect"></div>
+                <div id="1-1" class="square noselect"></div>
+                <div id="1-2" class="square noselect"></div>
+                <div id="2-0" class="square noselect"></div>
+                <div id="2-1" class="square noselect"></div>
+                <div id="2-2" class="square noselect"></div>
+            </div>
+            <div id="p2" class="players">
+                <h1 id="p2-name">Bot Player 2</h1>
+                <h1 id="p2-piece">(Y)</h1>
+                <div class="buttons">
+                    <button type="button" id="p2-add">Add Player 2</button>
+                    <button type="button" id="p2-remove">Remove Player 2</button>
+                </div>
+            </div>
+            <div class="start">
+                <button input="button">New Game</button>
+            </div>
+        </div>
+        <div class="form hidden">
+            <h1><strong>Add Player</strong></h1><br>
+            <label for="name">Player Name (must not be used already):</label><br>
+            <input type="text" id="name" placeholder="Name"><br><br>
+            <label for="piece">Piece (must not be used already and 1 character only):</label><br>
+            <input type="text" id="piece" placeholder="Piece (ex: O)"><br><br>
+            <div class="button-group">
+            <button id="p1-submit" class="hidden">Submit</button>
+            <button id="p2-submit" class="hidden">Submit</button>
+            <button id="return">Return</button>
+        </div>
+    </body>
+    <script src="script.js"></script>
+</html>
