@@ -66,7 +66,7 @@ const gameBoard = (() => {
         $gameboard = document.querySelector('#game-board');
         $gameboard.classList.remove('locked')
     };
-    return { board, resetBoard, fillBoard, checkWin, displayBoard, unlockBoard };
+    return { board, resetBoard, fillBoard, checkWin, displayBoard, unlockBoard, clearSquareFunctionality };
 })();
 
 const Player = (name, piece) => {
@@ -80,26 +80,58 @@ const Player = (name, piece) => {
     return {name, piece, makeMove}
 }
 
+const Bot = (name, piece) => {
+    const makeRandomMove = () => {
+        x = Math.floor(Math.random() * 3);
+        y = Math.floor(Math.random() * 3);
+        if (!gameBoard.board[x][y]) {
+            setTimeout(gameBoard.fillBoard(x, y, piece), 8000)
+        } else {
+            makeRandomMove();
+        }
+    }
+    const makePerfectMoves = () => {
+        
+    }
+    return {name, piece, makeRandomMove}
+}
+
 const game = (() => {
     $winner = document.querySelector('.winner');
-    let players = [Player("Bot Player 1", "X"), Player("Bot Player 2", "Y")];
+    let players = [Bot("Bot Player 1", "X"), Bot("Bot Player 2", "O")];
     const playVsPlayer = (currentPlayer) => {
         //swaps players
         (currentPlayer) ? currentPlayer = 0 : currentPlayer = 1;
         gameBoard.displayBoard(currentPlayer);
     };
-    const playVsComputer = () => {
-
+    const playVsComputer = (currentPlayer) => {
+        (currentPlayer) ? currentPlayer = 0 : currentPlayer = 1;
+        if (players[currentPlayer].name.indexOf("Bot ") != -1) {
+            players[currentPlayer].makeRandomMove();
+            if (!gameBoard.checkWin()) {
+                game.play(currentPlayer);
+            } else {
+                gameBoard.displayBoard(currentPlayer);
+                gameBoard.clearSquareFunctionality();
+                game.end(gameBoard.checkWin(), currentPlayer);
+            }
+        } else {
+            gameBoard.displayBoard(currentPlayer);
+        }
     };
     const play = (currentPlayer = 1) => {
-        if (players.length == 1) {
+        if (players[0].name.indexOf("Bot ") != -1 && players[1].name.indexOf("Bot ") != -1) {
+            displayError(new Error("Not Enough Players"));
+        } else if (players[0].name.indexOf("Bot ") == -1 && players[1].name.indexOf("Bot ") == -1) {
             $winner.classList.add('hidden');
-            playVsComputer(currentPlayer);
-        } else if (players.length == 2) {
-            $winner.classList.add('hidden');
+            gameBoard.unlockBoard();
+            hideError();
             playVsPlayer(currentPlayer);
         } else {
-            throw new Error("Not Enough Players")
+            $winner.classList.add('hidden');
+            gameBoard.unlockBoard();
+            hideError();
+            playVsComputer(currentPlayer);
         }
     }
     const end = (endType, currentPlayer) => {
@@ -115,7 +147,7 @@ const game = (() => {
         $error.classList.remove('hidden');
         $error.textContent = error
     };
-    const hideError = (error) => {
+    const hideError = () => {
         const $error = document.querySelector('.error');
         $error.classList.add('hidden');
     };
@@ -133,6 +165,70 @@ const form = (() => {
     const $p2Piece = document.querySelector('#p2-piece');
     const $p1Submit = document.querySelector('#p1-submit');
     const $p2Submit = document.querySelector('#p2-submit');
+    const initializeEventHandlers = () => {
+        const $returnButon = $form.querySelector('#return');
+        $returnButon.addEventListener('click', () => {
+            form.toggleDisplay();
+            form.clearForm();
+            game.hideError();
+            const $p1Submit = document.querySelector('#p1-submit');
+            const $p2Submit = document.querySelector('#p2-submit');
+            $p1Submit.classList.add('hidden');
+            $p2Submit.classList.add('hidden');
+        });
+        
+        $p1Submit.addEventListener('click', () => {
+            try {
+                form.submit(0)
+            } catch (error) {
+                game.displayError(error);
+            }
+        });
+        
+        const $addP1 = document.querySelector('#p1-add');
+        $addP1.addEventListener('click', () => {
+            $winner = document.querySelector('.winner');
+            $winner.classList.add('hidden')
+            form.toggleDisplay();
+            $p1Submit.classList.remove('hidden');
+        });
+        
+        $p2Submit.addEventListener('click', () => {
+            try {
+                form.submit(1)
+            } catch (error) {
+                game.displayError(error);
+            }
+        });
+        
+        const $addP2 = document.querySelector('#p2-add');
+        $addP2.addEventListener('click', () => {
+            $winner = document.querySelector('.winner');
+            $winner.classList.add('hidden')
+            form.toggleDisplay();
+            $p2Submit.classList.remove('hidden');
+        });
+        
+        const $startGame = document.querySelector('.start > button');
+        $startGame.addEventListener('click', () => {
+            gameBoard.resetBoard();
+            game.play();
+        });
+        
+        const $p1Remove = document.querySelector('#p1-remove')
+        $p1Remove.addEventListener('click', () => {
+            game.players[0] = Bot('Bot Player 1', 'X')
+            $p1Name.textContent = game.players[0].name;
+            $p1Piece.textContent = `(${game.players[0].piece})`;
+        })
+        
+        const $p2Remove = document.querySelector('#p2-remove')
+        $p2Remove.addEventListener('click', () => {
+            game.players[1] = Bot('Bot Player 2', 'O')
+            $p2Name.textContent = game.players[1].name;
+            $p2Piece.textContent = `(${game.players[1].piece})`;
+        })
+    };
     const toggleDisplay = () => {
         $form.classList.toggle('hidden');
         $game.classList.toggle('hidden');
@@ -165,65 +261,11 @@ const form = (() => {
         } else {
             throw new Error("Invalid Player");
         }
-        
     };
-    return { toggleDisplay, clearForm, submit };
+    return { toggleDisplay, clearForm, submit, initializeEventHandlers };
 })();
 
+form.initializeEventHandlers();
 
-$form = document.querySelector('.form');
-$returnButon = $form.querySelector('#return');
-$returnButon.addEventListener('click', () => {
-    form.toggleDisplay();
-    form.clearForm();
-    game.hideError();
-    const $p1Submit = document.querySelector('#p1-submit');
-    const $p2Submit = document.querySelector('#p2-submit');
-    $p1Submit.classList.add('hidden');
-    $p2Submit.classList.add('hidden');
-});
-
-
-$addP1 = document.querySelector('#p1-add');
-$addP2 = document.querySelector('#p2-add');
-
-const $p1Submit = document.querySelector('#p1-submit');
-$p1Submit.addEventListener('click', () => {
-    try {
-        form.submit(0)
-    } catch (error) {
-        game.displayError(error);
-    }
-});
-
-$addP1.addEventListener('click', () => {
-    $winner = document.querySelector('.winner');
-    $winner.classList.add('hidden')
-    form.toggleDisplay();
-    $p1Submit.classList.remove('hidden');
-});
-
-const $p2Submit = document.querySelector('#p2-submit');
-$p2Submit.addEventListener('click', () => {
-    try {
-        form.submit(1)
-    } catch (error) {
-        game.displayError(error);
-    }
-});
-
-$addP2.addEventListener('click', () => {
-    $winner = document.querySelector('.winner');
-    $winner.classList.add('hidden')
-    form.toggleDisplay();
-    $p2Submit.classList.remove('hidden');
-});
-
-$startGame = document.querySelector('.start > button');
-$startGame.addEventListener('click', () => {
-    gameBoard.resetBoard();
-    gameBoard.unlockBoard();
-    game.play();
-});
 
 
